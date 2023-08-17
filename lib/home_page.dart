@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:contacts_app/contact.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,6 +17,39 @@ class _HomePageState extends State<HomePage> {
   List<Contact> contacts = List.empty(growable: true);
 
   int selectedIndex = -1;
+
+  late SharedPreferences sp;
+
+  getSharedPrefrences() async {
+    sp = await SharedPreferences.getInstance();
+    readFromSp();
+  }
+
+  saveIntoSp() {
+    //
+    List<String> contactListString =
+        contacts.map((contact) => jsonEncode(contact.toJson())).toList();
+    sp.setStringList('myData', contactListString);
+    //
+  }
+
+  readFromSp() {
+    //
+    List<String>? contactListString = sp.getStringList('myData');
+    if (contactListString != null) {
+      contacts = contactListString
+          .map((contact) => Contact.fromJson(json.decode(contact)))
+          .toList();
+    }
+    setState(() {});
+    //
+  }
+
+  @override
+  void initState() {
+    getSharedPrefrences();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +99,8 @@ class _HomePageState extends State<HomePage> {
                           contactController.text = '';
                           contacts.add(Contact(name: name, contact: contact));
                         });
+                        // Saving contacts list into Shared Prefrences
+                        saveIntoSp();
                       }
                       //
                     },
@@ -80,6 +118,8 @@ class _HomePageState extends State<HomePage> {
                           contacts[selectedIndex].contact = contact;
                           selectedIndex = -1;
                         });
+                        // Saving contacts list into Shared Prefrences
+                        saveIntoSp();
                       }
                       //
                     },
@@ -147,6 +187,8 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       contacts.removeAt(index);
                     });
+                    // Saving contacts list into Shared Prefrences
+                    saveIntoSp();
                     //
                   }),
                   child: const Icon(Icons.delete)),
