@@ -15,6 +15,10 @@ class _HomePageState extends State<HomePage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController contactController = TextEditingController();
   List<Contact> contacts = List.empty(growable: true);
+  //
+  Contact? recentlyDeletedContact;
+  int recentlyDeletedIndex = -1;
+  //
 
   int selectedIndex = -1;
 
@@ -42,6 +46,29 @@ class _HomePageState extends State<HomePage> {
           .toList();
     }
     setState(() {});
+    //
+  }
+
+  showSnackBarWithUndo() {
+    //
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Deleted by mistake?'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            //
+            // Insert back the last deleted to contacts
+            contacts.insert(recentlyDeletedIndex, recentlyDeletedContact!);
+            // rebuild the state
+            setState(() {});
+            // Save into SP
+            saveIntoSp();
+            //
+          },
+        ),
+      ),
+    );
     //
   }
 
@@ -185,10 +212,15 @@ class _HomePageState extends State<HomePage> {
                   onTap: (() {
                     //
                     setState(() {
+                      // 
+                      recentlyDeletedContact = contacts[index];
+                      recentlyDeletedIndex = index;
+                      // 
                       contacts.removeAt(index);
                     });
                     // Saving contacts list into Shared Prefrences
                     saveIntoSp();
+                    showSnackBarWithUndo();
                     //
                   }),
                   child: const Icon(Icons.delete)),
