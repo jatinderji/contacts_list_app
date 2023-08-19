@@ -211,6 +211,7 @@ class _HomePageState extends State<HomePage> {
               InkWell(
                   onTap: (() {
                     //
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     setState(() {
                       // 
                       recentlyDeletedContact = contacts[index];
